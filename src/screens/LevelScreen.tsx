@@ -10,7 +10,7 @@ interface LevelScreenProps {
 }
 
 export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onKnowledge }) => {
-  const { state, answerQuestion, useAbility, getAbilityData } = useGame();
+  const { state, answerQuestion, useAbility, getAbilityData, setCurrentSubLevel } = useGame();
   const [currentProblem, setCurrentProblem] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -20,6 +20,7 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
 
   const problem = level.problems[currentProblem];
   const isComplete = currentProblem >= level.problems.length;
+  const exercisesPerSubLevel = Math.ceil(level.problems.length / 3);
 
   useEffect(() => {
     // Auto-enable multiplier hint could go here
@@ -66,6 +67,18 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
       }
 
       if (isCorrect || (!shieldActive && state.lives > 0)) {
+        const answeredCount = currentProblem + 1;
+        const completedSubLevel = answeredCount % exercisesPerSubLevel === 0 || answeredCount === level.problems.length;
+
+        if (completedSubLevel) {
+          if (state.currentSubLevel < 3) {
+            setCurrentSubLevel(state.currentSubLevel + 1);
+          } else {
+            onComplete();
+            return;
+          }
+        }
+
         if (currentProblem < level.problems.length - 1) {
           setCurrentProblem(prev => prev + 1);
         } else {

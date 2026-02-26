@@ -29,6 +29,7 @@ interface GameState {
   totalCorrect: number;
   currentLevelCorrect: number;
   currentLevelIncorrect: number;
+  currentSubLevel: number;
 }
 
 interface GameContextType {
@@ -46,6 +47,7 @@ interface GameContextType {
   getLevelStats: (levelId: number) => LevelStats;
   getOverallProgress: () => { completed: number; total: number; percentage: number };
   getOperationMastery: (operation: string) => number;
+  setCurrentSubLevel: (subLevel: number) => void;
 }
 
 const initialState: GameState = {
@@ -78,7 +80,8 @@ const initialState: GameState = {
   totalQuestionsAnswered: 0,
   totalCorrect: 0,
   currentLevelCorrect: 0,
-  currentLevelIncorrect: 0
+  currentLevelIncorrect: 0,
+  currentSubLevel: 1
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -132,8 +135,43 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       lives: 3,
       streak: 0,
       currentLevelCorrect: 0,
-      currentLevelIncorrect: 0
+      currentLevelIncorrect: 0,
+      currentSubLevel: 1
     }));
+  };
+
+  const getGameOverState = (prev: GameState): GameState => {
+    if (prev.currentSubLevel === 3) {
+      return {
+        ...prev,
+        lives: 3,
+        streak: 0,
+        currentLevelCorrect: 0,
+        currentLevelIncorrect: 0,
+        currentSubLevel: 3
+      };
+    }
+
+    if (prev.currentSubLevel === 2) {
+      return {
+        ...prev,
+        lives: 3,
+        streak: 0,
+        currentLevelCorrect: 0,
+        currentLevelIncorrect: 0,
+        currentSubLevel: 2
+      };
+    }
+
+    return {
+      ...prev,
+      lives: 3,
+      streak: 0,
+      currentLevel: 0,
+      currentLevelCorrect: 0,
+      currentLevelIncorrect: 0,
+      currentSubLevel: 1
+    };
   };
 
   const answerQuestion = (isCorrect: boolean, isBoss: boolean = false) => {
@@ -157,6 +195,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         newStreak = 0;
         newLives = Math.max(0, prev.lives - 1);
         newCurrentLevelIncorrect += 1;
+
+        if (newLives === 0) {
+          return getGameOverState(prev);
+        }
       }
 
       const newState = {
@@ -202,6 +244,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       streak: 0,
       currentLevelCorrect: 0,
       currentLevelIncorrect: 0
+    }));
+  };
+
+
+  const handleGameOver = () => {
+    setState(prev => ({
+      ...getGameOverState(prev)
     }));
   };
 
@@ -340,6 +389,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return state.operationMastery[operation] || 0;
   };
 
+  const setCurrentSubLevel = (subLevel: number) => {
+    setState(prev => ({
+      ...prev,
+      currentSubLevel: Math.max(1, Math.min(3, subLevel))
+    }));
+  };
+
   return (
     <GameContext.Provider value={{
       state,
@@ -355,7 +411,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       getAbilityData,
       getLevelStats,
       getOverallProgress,
-      getOperationMastery
+      getOperationMastery,
+      setCurrentSubLevel
     }}>
       {children}
     </GameContext.Provider>
