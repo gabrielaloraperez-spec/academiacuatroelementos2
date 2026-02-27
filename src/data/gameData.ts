@@ -1,3 +1,4 @@
+import { CORRECT_ANSWER_POINTS, STREAK_BONUS, MAX_STREAK_BONUS, BOSS_TIME_BONUS, BOSS_COMPLETE_BONUS, LIVES_BONUS, PERFECT_LEVEL_BONUS } from '../constants/gameConstants';
 // Game Data Configuration
 // La Academia de los Cuatro Reinos - Enhanced Version
 
@@ -371,13 +372,13 @@ export const achievements: Achievement[] = [
 
 // Scoring
 export const SCORING = {
-  CORRECT_ANSWER: 100,
-  STREAK_BONUS: 10,
-  STREAK_MAX: 50,
-  BOSS_TIME_BONUS: 5,
-  BOSS_COMPLETE_BONUS: 1000,
-  LIVES_BONUS: 200,
-  PERFECT_LEVEL_BONUS: 500
+  CORRECT_ANSWER: CORRECT_ANSWER_POINTS,
+  STREAK_BONUS,
+  STREAK_MAX: MAX_STREAK_BONUS,
+  BOSS_TIME_BONUS,
+  BOSS_COMPLETE_BONUS,
+  LIVES_BONUS,
+  PERFECT_LEVEL_BONUS
 };
 
 // Operation info for display

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { bossProblems } from '../data/gameData';
 import { ProgressBar, Hearts, ScoreDisplay, AnswerButton, Feedback, AbilityButton, HintDisplay } from '../components/GameComponents';
+import { CORRECT_ANSWER_POINTS, FEEDBACK_TIMEOUT_MS } from '../constants/gameConstants';
 
 interface BossScreenProps {
   onComplete: () => void;
@@ -58,7 +59,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
     if (isCorrect) {
       setFeedback('correct');
       setShowHint(false);
-      let points = 100;
+      let points = CORRECT_ANSWER_POINTS;
       if (multiplierActive) {
         points *= 2;
         setMultiplierActive(false);
@@ -89,7 +90,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
       } else {
         onComplete();
       }
-    }, 1200);
+    }, FEEDBACK_TIMEOUT_MS);
   };
 
   const handleUseAbility = (abilityId: string) => {

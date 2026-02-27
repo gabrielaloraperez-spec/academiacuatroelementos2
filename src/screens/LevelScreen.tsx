@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { Level } from '../data/gameData';
 import { ProgressBar, Hearts, ScoreDisplay, AnswerButton, Feedback, AbilityButton, HintDisplay } from '../components/GameComponents';
+import { CORRECT_ANSWER_POINTS, FEEDBACK_TIMEOUT_MS } from '../constants/gameConstants';
 
 interface LevelScreenProps {
   level: Level;
@@ -33,7 +34,7 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
     if (isCorrect) {
       setFeedback('correct');
       setShowHint(false);
-      let points = 100;
+      let points = CORRECT_ANSWER_POINTS;
       if (multiplierActive) {
         points *= 2;
         setMultiplierActive(false);
@@ -82,7 +83,7 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
           onComplete();
         }
       }
-    }, 1200);
+    }, FEEDBACK_TIMEOUT_MS);
   };
 
   const handleUseAbility = (abilityId: string) => {

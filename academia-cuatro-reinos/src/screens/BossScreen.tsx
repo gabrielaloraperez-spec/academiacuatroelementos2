@@ -58,7 +58,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
 
     if (isCorrect) {
       setFeedback('correct');
-      let points = 100;
+      let points = CORRECT_ANSWER_POINTS;
       if (multiplierActive) {
         points *= 2;
         setMultiplierActive(false);
@@ -84,7 +84,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
       } else {
         onComplete();
       }
-    }, 1200);
+    }, FEEDBACK_TIMEOUT_MS);
   };
 
   const handleUseAbility = (abilityId: string) => {

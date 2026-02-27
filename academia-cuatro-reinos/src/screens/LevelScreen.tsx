@@ -32,7 +32,7 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
 
     if (isCorrect) {
       setFeedback('correct');
-      let points = 100;
+      let points = CORRECT_ANSWER_POINTS;
       if (multiplierActive) {
         points *= 2;
         setMultiplierActive(false);
@@ -64,7 +64,7 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
           onComplete();
         }
       }
-    }, 1200);
+    }, FEEDBACK_TIMEOUT_MS);
   };
 
   const handleUseAbility = (abilityId: string) => {
