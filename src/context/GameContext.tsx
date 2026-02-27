@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { levels, abilities, SCORING, Level, Ability } from '../data/gameData';
 
 interface LevelStats {
@@ -97,7 +97,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('academiaGameState', JSON.stringify(state));
   }, [state]);
 
-  const checkAchievements = (newState: GameState) => {
+  const checkAchievements = useCallback((newState: GameState) => {
     const newAchievements: string[] = [...newState.achievements];
 
     // First level completed
@@ -127,9 +127,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { ...newState, achievements: newAchievements };
     }
     return newState;
-  };
+  }, []);
 
-  const startLevel = (levelId: number) => {
+  const startLevel = useCallback((levelId: number) => {
     setState(prev => ({
       ...prev,
       currentLevel: levelId,
@@ -139,9 +139,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       currentLevelIncorrect: 0,
       currentSubLevel: 1
     }));
-  };
+  }, []);
 
-  const getGameOverState = (prev: GameState): GameState => {
+  const getGameOverState = useCallback((prev: GameState): GameState => {
     if (prev.currentSubLevel === 3) {
       return {
         ...prev,
@@ -173,9 +173,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       currentLevelIncorrect: 0,
       currentSubLevel: 1
     };
-  };
+  }, []);
 
-  const answerQuestion = (isCorrect: boolean, _isBoss: boolean = false) => {
+  const answerQuestion = useCallback((isCorrect: boolean, _isBoss: boolean = false) => {
     setState(prev => {
       let newMana = prev.mana;
       let newStreak = prev.streak;
@@ -217,28 +217,33 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       return checkAchievements(newState);
     });
-  };
+  }, [checkAchievements, getGameOverState]);
 
-  const useAbility = (abilityId: string): boolean => {
-    const ability = abilities.find(a => a.id === abilityId);
-    if (!ability) return false;
+  const useAbility = useCallback((abilityId: string): boolean => {
+    let wasApplied = false;
 
-    const currentUses = state.abilityUses[abilityId] || 0;
-    if (currentUses <= 0 || state.mana < ability.cost) return false;
+    setState(prev => {
+      const ability = abilities.find(a => a.id === abilityId);
+      if (!ability) return prev;
 
-    setState(prev => ({
-      ...prev,
-      mana: prev.mana - ability.cost,
-      abilityUses: {
-        ...prev.abilityUses,
-        [abilityId]: prev.abilityUses[abilityId] - 1
-      }
-    }));
+      const currentUses = prev.abilityUses[abilityId] || 0;
+      if (currentUses <= 0 || prev.mana < ability.cost) return prev;
 
-    return true;
-  };
+      wasApplied = true;
+      return {
+        ...prev,
+        mana: prev.mana - ability.cost,
+        abilityUses: {
+          ...prev.abilityUses,
+          [abilityId]: prev.abilityUses[abilityId] - 1
+        }
+      };
+    });
 
-  const resetLevel = () => {
+    return wasApplied;
+  }, []);
+
+  const resetLevel = useCallback(() => {
     setState(prev => ({
       ...prev,
       lives: 3,
@@ -246,26 +251,23 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       currentLevelCorrect: 0,
       currentLevelIncorrect: 0
     }));
-  };
+  }, []);
 
 
-  const handleGameOver = () => {
+  const handleGameOver = useCallback(() => {
     setState(prev => ({
       ...getGameOverState(prev)
     }));
-  };
+  }, [getGameOverState]);
 
-  const completeLevel = (levelId: number, wasPerfect: boolean = false) => {
+  const completeLevel = useCallback((levelId: number, wasPerfect: boolean = false) => {
     const level = levels.find(l => l.id === levelId);
     if (!level) return;
 
-    const total = state.currentLevelCorrect + state.currentLevelIncorrect;
-    const accuracy = total > 0 ? Math.round((state.currentLevelCorrect / total) * 100) : 0;
-
-    // Calculate mastery based on accuracy and streak
-    const mastery = Math.min(100, accuracy + (wasPerfect ? 20 : 0));
-
     setState(prev => {
+      const total = prev.currentLevelCorrect + prev.currentLevelIncorrect;
+      const accuracy = total > 0 ? Math.round((prev.currentLevelCorrect / total) * 100) : 0;
+      const mastery = Math.min(100, accuracy + (wasPerfect ? 20 : 0));
       const newUnlockedLevels = [...new Set([...prev.unlockedLevels, levelId + 1])];
 
       // Unlock boss after level 4
@@ -330,9 +332,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       return newState;
     });
-  };
+  }, []);
 
-  const completeBoss = (timeRemaining: number = 0) => {
+  const completeBoss = useCallback((timeRemaining: number = 0) => {
     setState(prev => {
       const newAchievements = [...prev.achievements];
 
@@ -349,73 +351,92 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         achievements: newAchievements
       };
     });
-  };
+  }, []);
 
-  const completeKnowledgeRoom = () => {
+  const completeKnowledgeRoom = useCallback(() => {
     setState(prev => ({
       ...prev,
       knowledgeRoomsCompleted: prev.knowledgeRoomsCompleted + 1
     }));
-  };
+  }, []);
 
-  const setPlayerInfo = (name: string, avatar: string) => {
+  const setPlayerInfo = useCallback((name: string, avatar: string) => {
     setState(prev => ({
       ...prev,
       playerName: name,
       avatar
     }));
-  };
+  }, []);
 
-  const getCurrentLevelData = (): Level | null => {
+  const getCurrentLevelData = useCallback((): Level | null => {
     if (state.currentLevel === 0) return null;
     return levels.find(l => l.id === state.currentLevel) || null;
-  };
+  }, [state.currentLevel]);
 
-  const getAbilityData = (abilityId: string): Ability | undefined => {
+  const getAbilityData = useCallback((abilityId: string): Ability | undefined => {
     return abilities.find(a => a.id === abilityId);
-  };
+  }, []);
 
-  const getLevelStats = (levelId: number): LevelStats => {
+  const getLevelStats = useCallback((levelId: number): LevelStats => {
     return state.levelStats[levelId] || { correct: 0, incorrect: 0, accuracy: 0, mastery: 0 };
-  };
+  }, [state.levelStats]);
 
-  const getOverallProgress = () => {
+  const getOverallProgress = useCallback(() => {
     const completed = state.unlockedLevels.length - 1;
     const total = 4; // 4 main levels + boss
     const percentage = Math.round((completed / total) * 100);
     return { completed, total, percentage };
-  };
+  }, [state.unlockedLevels]);
 
-  const getOperationMastery = (operation: string): number => {
+  const getOperationMastery = useCallback((operation: string): number => {
     return state.operationMastery[operation] || 0;
-  };
+  }, [state.operationMastery]);
 
-  const setCurrentSubLevel = (subLevel: number) => {
+  const setCurrentSubLevel = useCallback((subLevel: number) => {
     setState(prev => ({
       ...prev,
       currentSubLevel: Math.max(1, Math.min(3, subLevel))
     }));
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    state,
+    startLevel,
+    answerQuestion,
+    useAbility,
+    resetLevel,
+    completeLevel,
+    completeBoss,
+    completeKnowledgeRoom,
+    setPlayerInfo,
+    getCurrentLevelData,
+    getAbilityData,
+    getLevelStats,
+    getOverallProgress,
+    getOperationMastery,
+    setCurrentSubLevel,
+    handleGameOver
+  }), [
+    state,
+    startLevel,
+    answerQuestion,
+    useAbility,
+    resetLevel,
+    completeLevel,
+    completeBoss,
+    completeKnowledgeRoom,
+    setPlayerInfo,
+    getCurrentLevelData,
+    getAbilityData,
+    getLevelStats,
+    getOverallProgress,
+    getOperationMastery,
+    setCurrentSubLevel,
+    handleGameOver
+  ]);
 
   return (
-    <GameContext.Provider value={{
-      state,
-      startLevel,
-      answerQuestion,
-      useAbility,
-      resetLevel,
-      completeLevel,
-      completeBoss,
-      completeKnowledgeRoom,
-      setPlayerInfo,
-      getCurrentLevelData,
-      getAbilityData,
-      getLevelStats,
-      getOverallProgress,
-      getOperationMastery,
-      setCurrentSubLevel,
-      handleGameOver
-    }}>
+    <GameContext.Provider value={contextValue}>
       {children}
     </GameContext.Provider>
   );
