@@ -293,7 +293,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         [level.operation]: Math.max(prev.operationMastery[level.operation] || 0, mastery)
       };
 
-      let newAchievements = [...prev.achievements];
+      const newAchievements = [...prev.achievements];
 
       // Perfect level achievement
       if (wasPerfect && !newAchievements.includes('perfect_level')) {
@@ -334,7 +334,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const completeBoss = (timeRemaining: number = 0) => {
     setState(prev => {
-      let newAchievements = [...prev.achievements];
+      const newAchievements = [...prev.achievements];
 
       // Speed demon achievement
       if (timeRemaining >= 60 && !newAchievements.includes('speed_demon')) {

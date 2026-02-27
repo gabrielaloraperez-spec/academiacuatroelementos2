@@ -93,7 +93,7 @@ const GameApp: React.FC = () => {
           />
         );
 
-      case 'level':
+      case 'level': {
         const level = getCurrentLevel();
         if (!level) return <WelcomeScreen />;
         return (
@@ -103,8 +103,9 @@ const GameApp: React.FC = () => {
             onKnowledge={() => setCurrentScreen('knowledge')}
           />
         );
+      }
 
-      case 'knowledge':
+      case 'knowledge': {
         const knowledgeLevel = getCurrentLevel();
         if (!knowledgeLevel) return <WelcomeScreen />;
         return (
@@ -113,6 +114,7 @@ const GameApp: React.FC = () => {
             onComplete={handleKnowledgeComplete}
           />
         );
+      }
 
       case 'boss':
         return (

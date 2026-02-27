@@ -11,7 +11,7 @@ interface BossScreenProps {
 const BOSS_TIME = 120; // seconds
 
 export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }) => {
-  const { state, answerQuestion, useAbility, getAbilityData } = useGame();
+  const { state, answerQuestion, useAbility: activateAbility, getAbilityData } = useGame();
   const [currentProblem, setCurrentProblem] = useState(0);
   const [timeLeft, setTimeLeft] = useState(BOSS_TIME);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
@@ -88,7 +88,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
   };
 
   const handleUseAbility = (abilityId: string) => {
-    const success = useAbility(abilityId);
+    const success = activateAbility(abilityId);
     if (success) {
       if (abilityId === 'multiplier') {
         setMultiplierActive(true);
