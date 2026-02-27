@@ -1,14 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
-import {
-  WelcomeScreen,
-  MapScreen,
-  LevelScreen,
-  KnowledgeRoom,
-  BossScreen,
-  GameOverScreen
-} from './screens';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { levels } from './data/gameData';
+
+const WelcomeScreen = lazy(() =>
+  import('./screens/WelcomeScreen').then((module) => ({ default: module.WelcomeScreen }))
+);
+const MapScreen = lazy(() =>
+  import('./screens/MapScreen').then((module) => ({ default: module.MapScreen }))
+);
+const LevelScreen = lazy(() =>
+  import('./screens/LevelScreen').then((module) => ({ default: module.LevelScreen }))
+);
+const KnowledgeRoom = lazy(() =>
+  import('./screens/KnowledgeRoom').then((module) => ({ default: module.KnowledgeRoom }))
+);
+const BossScreen = lazy(() =>
+  import('./screens/BossScreen').then((module) => ({ default: module.BossScreen }))
+);
+const GameOverScreen = lazy(() =>
+  import('./screens/GameOverScreen').then((module) => ({ default: module.GameOverScreen }))
+);
 
 type Screen = 'welcome' | 'map' | 'level' | 'knowledge' | 'boss' | 'gameover';
 
@@ -141,7 +153,9 @@ const GameApp: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      {renderScreen()}
+      <Suspense fallback={<LoadingSpinner />}>
+        {renderScreen()}
+      </Suspense>
     </div>
   );
 };
