@@ -27,6 +27,7 @@ const GameApp: React.FC = () => {
   }, [state.playerName, currentScreen]);
 
   const handleStartLevel = (levelId: number) => {
+    startLevel(levelId);
     setCurrentLevelId(levelId);
     setCurrentScreen('level');
   };

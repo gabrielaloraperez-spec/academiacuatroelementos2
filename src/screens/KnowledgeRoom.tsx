@@ -10,7 +10,6 @@ export const KnowledgeRoom: React.FC<KnowledgeRoomProps> = ({ level, onComplete 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [allCorrect, setAllCorrect] = useState(true);
 
   const { knowledge } = level;
   const question = knowledge.miniQuestions[currentQuestion];
@@ -20,10 +19,6 @@ export const KnowledgeRoom: React.FC<KnowledgeRoomProps> = ({ level, onComplete 
 
     setSelectedAnswer(answerIndex);
     setShowResult(true);
-
-    if (answerIndex !== question.correctAnswer) {
-      setAllCorrect(false);
-    }
 
     setTimeout(() => {
       if (currentQuestion < knowledge.miniQuestions.length - 1) {

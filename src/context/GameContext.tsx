@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { levels, abilities, SCORING, Level, Ability, achievements, Achievement } from '../data/gameData';
+import { levels, abilities, SCORING, Level, Ability } from '../data/gameData';
 
 interface LevelStats {
   correct: number;
@@ -35,7 +35,7 @@ interface GameState {
 interface GameContextType {
   state: GameState;
   startLevel: (levelId: number) => void;
-  answerQuestion: (isCorrect: boolean, isBoss?: boolean) => void;
+  answerQuestion: (isCorrect: boolean, _isBoss?: boolean) => void;
   useAbility: (abilityId: string) => boolean;
   resetLevel: () => void;
   completeLevel: (levelId: number, wasPerfect: boolean) => void;
@@ -48,6 +48,7 @@ interface GameContextType {
   getOverallProgress: () => { completed: number; total: number; percentage: number };
   getOperationMastery: (operation: string) => number;
   setCurrentSubLevel: (subLevel: number) => void;
+  handleGameOver: () => void;
 }
 
 const initialState: GameState = {
@@ -174,7 +175,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   };
 
-  const answerQuestion = (isCorrect: boolean, isBoss: boolean = false) => {
+  const answerQuestion = (isCorrect: boolean, _isBoss: boolean = false) => {
     setState(prev => {
       let newMana = prev.mana;
       let newStreak = prev.streak;
@@ -412,7 +413,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       getLevelStats,
       getOverallProgress,
       getOperationMastery,
-      setCurrentSubLevel
+      setCurrentSubLevel,
+      handleGameOver
     }}>
       {children}
     </GameContext.Provider>

@@ -249,6 +249,7 @@ export const AbilityButton: React.FC<AbilityButtonProps> = ({
 }) => {
   return (
     <button
+      id={id}
       onClick={onClick}
       disabled={!available}
       className={`
@@ -378,15 +379,6 @@ export const LevelCard: React.FC<LevelCardProps> = ({
   highScore,
   onClick
 }) => {
-  const getOperationIcon = () => {
-    switch(level.operation) {
-      case 'addition': return Icons.plus;
-      case 'subtraction': return Icons.minus;
-      case 'multiplication': return Icons.multiply;
-      case 'division': return Icons.divide;
-      default: return Icons.target;
-    }
-  };
 
   return (
     <button
@@ -491,6 +483,7 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 }) => {
   return (
     <div
+      id={id}
       className={`
         flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-300
         ${unlocked

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
-import { bossProblems, Problem } from '../data/gameData';
+import { bossProblems } from '../data/gameData';
 import { ProgressBar, Hearts, ScoreDisplay, AnswerButton, Feedback, AbilityButton, HintDisplay } from '../components/GameComponents';
 
 interface BossScreenProps {
@@ -15,7 +15,6 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
   const [currentProblem, setCurrentProblem] = useState(0);
   const [timeLeft, setTimeLeft] = useState(BOSS_TIME);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [multiplierActive, setMultiplierActive] = useState(false);
   const [shieldActive, setShieldActive] = useState(false);
   const [timeFrozen, setTimeFrozen] = useState(false);
@@ -54,7 +53,6 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
   const handleAnswer = (answer: number) => {
     if (feedback !== null) return;
 
-    setSelectedAnswer(answer);
     const isCorrect = answer === problem.answer;
 
     if (isCorrect) {
@@ -84,7 +82,6 @@ export const BossScreen: React.FC<BossScreenProps> = ({ onComplete, onGameOver }
 
     setTimeout(() => {
       setFeedback(null);
-      setSelectedAnswer(null);
       setShowHint(false);
 
       if (currentProblem < bossProblems.length - 1) {

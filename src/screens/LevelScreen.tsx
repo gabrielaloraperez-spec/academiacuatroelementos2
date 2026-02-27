@@ -13,7 +13,6 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
   const { state, answerQuestion, useAbility, getAbilityData, setCurrentSubLevel } = useGame();
   const [currentProblem, setCurrentProblem] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [multiplierActive, setMultiplierActive] = useState(false);
   const [shieldActive, setShieldActive] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -29,7 +28,6 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
   const handleAnswer = (answer: number) => {
     if (feedback !== null) return;
 
-    setSelectedAnswer(answer);
     const isCorrect = answer === problem.answer;
 
     if (isCorrect) {
@@ -59,7 +57,6 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
 
     setTimeout(() => {
       setFeedback(null);
-      setSelectedAnswer(null);
       setShowHint(false);
 
       if (!isCorrect && state.lives <= 1 && !shieldActive) {
