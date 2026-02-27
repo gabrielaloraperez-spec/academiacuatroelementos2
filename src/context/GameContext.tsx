@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { levels, abilities, SCORING, Level, Ability } from '../data/gameData';
+import { resolveAnswerState } from './gameStateUtils';
 
 interface LevelStats {
   correct: number;
@@ -177,45 +178,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const answerQuestion = useCallback((isCorrect: boolean, _isBoss: boolean = false) => {
     setState(prev => {
-      let newMana = prev.mana;
-      let newStreak = prev.streak;
-      let newMaxStreak = prev.maxStreak;
-      let newLives = prev.lives;
-      let scoreGain = 0;
-      let newCurrentLevelCorrect = prev.currentLevelCorrect;
-      let newCurrentLevelIncorrect = prev.currentLevelIncorrect;
+      const answerResult = resolveAnswerState(prev, isCorrect, {
+        correctAnswer: SCORING.CORRECT_ANSWER,
+        streakBonus: SCORING.STREAK_BONUS,
+        streakMax: SCORING.STREAK_MAX
+      });
 
-      if (isCorrect) {
-        newStreak += 1;
-        newMaxStreak = Math.max(newMaxStreak, newStreak);
-        const streakBonus = Math.min(newStreak * SCORING.STREAK_BONUS, SCORING.STREAK_MAX);
-        scoreGain = SCORING.CORRECT_ANSWER + streakBonus;
-        newMana += 10;
-        newCurrentLevelCorrect += 1;
-      } else {
-        newStreak = 0;
-        newLives = Math.max(0, prev.lives - 1);
-        newCurrentLevelIncorrect += 1;
-
-        if (newLives === 0) {
-          return getGameOverState(prev);
-        }
+      if (answerResult.reachedZeroLives) {
+        return getGameOverState(prev);
       }
 
-      const newState = {
-        ...prev,
-        score: prev.score + scoreGain,
-        mana: newMana,
-        streak: newStreak,
-        maxStreak: newMaxStreak,
-        lives: newLives,
-        totalQuestionsAnswered: prev.totalQuestionsAnswered + 1,
-        totalCorrect: isCorrect ? prev.totalCorrect + 1 : prev.totalCorrect,
-        currentLevelCorrect: newCurrentLevelCorrect,
-        currentLevelIncorrect: newCurrentLevelIncorrect
-      };
-
-      return checkAchievements(newState);
+      return checkAchievements({ ...prev, ...answerResult });
     });
   }, [checkAchievements, getGameOverState]);
 

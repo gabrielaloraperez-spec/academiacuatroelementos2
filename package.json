@@ -10,7 +10,10 @@
     "lint": "pnpm install --prefer-offline && eslint .",
     "preview": "pnpm install --prefer-offline && vite preview",
     "install-deps": "pnpm install --prefer-offline",
-    "clean": "rm -rf node_modules .pnpm-store pnpm-lock.yaml && pnpm store prune"
+    "clean": "rm -rf node_modules .pnpm-store pnpm-lock.yaml && pnpm store prune",
+    "test:unit": "node --test --experimental-strip-types tests/unit/*.test.ts",
+    "test:e2e": "node tests/e2e/level-complete.playwright.mjs",
+    "test": "pnpm run test:unit && pnpm run test:e2e"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
