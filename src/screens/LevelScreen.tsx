@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { Level } from '../data/gameData';
-import { ProgressBar, Hearts, ScoreDisplay, AnswerButton, Feedback, AbilityButton, HintDisplay } from '../components/GameComponents';
+import { ProgressBar, Hearts, ScoreDisplay } from '../components/GameComponents';
+import { QuestionDisplay, AnswerOptions, AbilityBar, FeedbackOverlay } from '../components/level/LevelScreenSections';
 import { CORRECT_ANSWER_POINTS, FEEDBACK_TIMEOUT_MS } from '../constants/gameConstants';
 
 interface LevelScreenProps {
@@ -176,66 +177,30 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
       {/* Question Area */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <div className="bg-white rounded-3xl p-8 shadow-xl text-center">
-            {/* Hint Display */}
-            {showHint && problem.hint && (
-              <div className="mb-6">
-                <HintDisplay hint={problem.hint} />
-              </div>
-            )}
-
-            <div className="text-6xl font-bold text-gray-800 mb-8">
-              {problem.question}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {problem.options.map((option, index) => (
-                <AnswerButton
-                  key={index}
-                  value={option}
-                  onClick={() => handleAnswer(option)}
-                  disabled={feedback !== null}
-                />
-              ))}
-            </div>
-          </div>
+          <QuestionDisplay
+            problem={problem}
+            showHint={showHint}
+          />
+          <AnswerOptions
+            options={problem.options}
+            disabled={feedback !== null}
+            onAnswer={handleAnswer}
+          />
         </div>
       </div>
 
-      {/* Abilities */}
-      <div className="p-4">
-        <div className="max-w-md mx-auto">
-          <div className="grid grid-cols-4 gap-2">
-            {['shield', 'recharge', 'multiplier', 'extratime'].map((abilityId) => {
-              const ability = getAbilityData(abilityId);
-              if (!ability) return null;
-              return (
-                <AbilityButton
-                  key={abilityId}
-                  id={abilityId}
-                  name={ability.name}
-                  icon={ability.icon}
-                  cost={ability.cost}
-                  usesLeft={state.abilityUses[abilityId]}
-                  available={state.mana >= ability.cost && state.abilityUses[abilityId] > 0}
-                  onClick={() => handleUseAbility(abilityId)}
-                />
-              );
-            })}
-          </div>
-          <div className="text-center text-purple-600 text-sm mt-2">
-            💎 Maná disponible: {state.mana}
-          </div>
-        </div>
-      </div>
+      <AbilityBar
+        abilities={['shield', 'recharge', 'multiplier', 'extratime']}
+        getAbilityData={getAbilityData}
+        abilityUses={state.abilityUses}
+        mana={state.mana}
+        onUseAbility={handleUseAbility}
+      />
 
-      {/* Feedback Overlay */}
-      {feedback && (
-        <Feedback
-          type={feedback}
-          message={feedback === 'incorrect' ? `La respuesta era ${problem.answer}` : undefined}
-        />
-      )}
+      <FeedbackOverlay
+        feedback={feedback}
+        correctAnswer={problem.answer}
+      />
     </div>
   );
 };
