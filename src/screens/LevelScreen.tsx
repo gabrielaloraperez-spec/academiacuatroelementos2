@@ -15,6 +15,13 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
   const { state, answerQuestion, useAbility: activateAbility, getAbilityData, setCurrentSubLevel } = useGame();
   const [currentProblem, setCurrentProblem] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [pendingResolution, setPendingResolution] = useState<{
+    isCorrect: boolean;
+    shieldWasActive: boolean;
+    livesBeforeAnswer: number;
+    problemIndex: number;
+    subLevelAtAnswer: number;
+  } | null>(null);
   const [multiplierActive, setMultiplierActive] = useState(false);
   const [shieldActive, setShieldActive] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -27,10 +34,54 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
     // Auto-enable multiplier hint could go here
   }, [state.mana, state.abilityUses.multiplier, multiplierActive]);
 
+  useEffect(() => {
+    if (!pendingResolution) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setFeedback(null);
+      setShowHint(false);
+
+      if (!pendingResolution.isCorrect && pendingResolution.livesBeforeAnswer <= 1 && !pendingResolution.shieldWasActive) {
+        setPendingResolution(null);
+        return;
+      }
+
+      if (pendingResolution.isCorrect || (!pendingResolution.shieldWasActive && pendingResolution.livesBeforeAnswer > 0)) {
+        const answeredCount = pendingResolution.problemIndex + 1;
+        const completedSubLevel = answeredCount % exercisesPerSubLevel === 0 || answeredCount === level.problems.length;
+
+        if (completedSubLevel) {
+          if (pendingResolution.subLevelAtAnswer < 3) {
+            setCurrentSubLevel(pendingResolution.subLevelAtAnswer + 1);
+          } else {
+            setPendingResolution(null);
+            onComplete();
+            return;
+          }
+        }
+
+        if (pendingResolution.problemIndex < level.problems.length - 1) {
+          setCurrentProblem(prev => prev + 1);
+        } else {
+          onComplete();
+        }
+      }
+
+      setPendingResolution(null);
+    }, FEEDBACK_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [exercisesPerSubLevel, level.problems.length, onComplete, pendingResolution, setCurrentSubLevel]);
+
   const handleAnswer = (answer: number) => {
     if (feedback !== null) return;
 
     const isCorrect = answer === problem.answer;
+    const shieldWasActive = shieldActive;
+    const livesBeforeAnswer = state.lives;
+    const effectiveCorrect = isCorrect || shieldWasActive;
 
     if (isCorrect) {
       setFeedback('correct');
@@ -57,34 +108,13 @@ export const LevelScreen: React.FC<LevelScreenProps> = ({ level, onComplete, onK
       }
     }
 
-    setTimeout(() => {
-      setFeedback(null);
-      setShowHint(false);
-
-      if (!isCorrect && state.lives <= 1 && !shieldActive) {
-        return;
-      }
-
-      if (isCorrect || (!shieldActive && state.lives > 0)) {
-        const answeredCount = currentProblem + 1;
-        const completedSubLevel = answeredCount % exercisesPerSubLevel === 0 || answeredCount === level.problems.length;
-
-        if (completedSubLevel) {
-          if (state.currentSubLevel < 3) {
-            setCurrentSubLevel(state.currentSubLevel + 1);
-          } else {
-            onComplete();
-            return;
-          }
-        }
-
-        if (currentProblem < level.problems.length - 1) {
-          setCurrentProblem(prev => prev + 1);
-        } else {
-          onComplete();
-        }
-      }
-    }, FEEDBACK_TIMEOUT_MS);
+    setPendingResolution({
+      isCorrect: effectiveCorrect,
+      shieldWasActive,
+      livesBeforeAnswer,
+      problemIndex: currentProblem,
+      subLevelAtAnswer: state.currentSubLevel
+    });
   };
 
   const handleUseAbility = (abilityId: string) => {
